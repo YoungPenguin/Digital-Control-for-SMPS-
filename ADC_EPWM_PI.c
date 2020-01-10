@@ -46,7 +46,7 @@ int out_min = 0;
 
 double error;
 double PI_output;
-double Ts = 0.001666666666;
+double Ts = 0.001666666666; // 1/600  - 600Hz
 double prev_out;
 double  prev_error;
 
