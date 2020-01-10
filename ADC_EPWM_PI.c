@@ -37,21 +37,19 @@ void ADC_SETUP_Fn();
 void set_duty(int a);
 
 int adcresult=2048;
-
-int R1 = 1000;
-int R2 = 1000;
-int Ref_v = 2000;
-
-int vout;
-int vin;
+int Ref_v = 2048;
 
 // control parameters
-int kp = 10;
-int ki = 10;
+double kp = 0.5;
+double ki = 5;
+int out_max = 4096;
+int out_min = 0;
 
-int error;
-int pwm;
-int integral= 500;
+double error;
+double PI_output;
+double Ts = 0.001666666666;
+double prev_out;
+double  prev_error;
 
 interrupt void adc_isr(void)
 {
@@ -59,18 +57,23 @@ interrupt void adc_isr(void)
 
     adcresult = Digital_Result;
 
-// PI Controller section
-  /*  vout = (adcresult * 3.3) / 4096; // see text
-    vin = vout / (R2/(R1+R2));
-    error = Ref_v-vin; */
+
     error = Ref_v-adcresult;
+    PI_output = (kp*(error-prev_error)+ki*Ts*error)+prev_out;
 
-    integral = integral + error;
-    pwm = (kp*error)+(ki*integral);
-// PI controller end //
+    if(PI_output > out_max){
+        PI_output = out_max;}
+    else if (PI_output < out_min) {
+        PI_output = out_min;
+    }
+    prev_out = PI_output;
+    prev_error = error;
 
 
-    set_duty(TBPRD-adcresult); // TBPRD is 12 bit, so this just do the inversion of the analog input value
+    set_duty(PI_output); // TBPRD is 12 bit, so this just do the inversion of the analog input value
+
+
+
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
     PIE_clearInt(myPie, PIE_GroupNumber_10);
@@ -104,10 +107,8 @@ void main(void)
     ADC_INIT_Fn();
     ADC_SETUP_Fn();
 
-    //GPIO 6 & 7
+    //GPIO 6
     GPIO_setMode(myGpio, GPIO_Number_6, GPIO_6_Mode_EPWM4A);
-    GPIO_setMode(myGpio, GPIO_Number_7, GPIO_7_Mode_EPWM4B);
-
 
       CLK_disableTbClockSync(myClk);
       pwm_Init_();
@@ -117,6 +118,8 @@ void main(void)
     while(1)
     {
      ADC_forceConversion(myAdc, ADC_SocNumber_0);// Wait for ADC interrupt
+
+
     }
 
 }
@@ -184,11 +187,6 @@ void pwm_Init_()
     PWM_setActionQual_CntUp_CmpA_PwmA(myPwm4, PWM_ActionQual_Clear);
     PWM_setActionQual_CntDown_CmpA_PwmA(myPwm4, PWM_ActionQual_Set);  // Clear PWM1A on event A, down count
 
-    //SETUP for GPIO 7 PWM
-    PWM_setShadowMode_CmpB(myPwm4, PWM_ShadowMode_Shadow);
-    PWM_setLoadMode_CmpB(myPwm4, PWM_LoadMode_Zero);
-    PWM_setActionQual_CntUp_CmpB_PwmB(myPwm4, PWM_ActionQual_Clear);
-    PWM_setActionQual_CntDown_CmpB_PwmB(myPwm4, PWM_ActionQual_Set);
 }
 void set_duty( int a)
 {
