@@ -10,7 +10,6 @@
 #include "f2802x_common/include/pwr.h"
 #include "f2802x_common/include/pwm.h"
 
-
 void pwm_Init_();
 
 unsigned int TBPRD = 4096;// step-size of the PWM (PWM resolution)
@@ -57,7 +56,6 @@ interrupt void adc_isr(void)
 
     adcresult = Digital_Result;
 
-
     error = Ref_v-adcresult;
     PI_output = (kp*(error-prev_error)+ki*Ts*error)+prev_out;
 
@@ -69,11 +67,7 @@ interrupt void adc_isr(void)
     prev_out = PI_output;
     prev_error = error;
 
-
     set_duty(PI_output); // TBPRD is 12 bit, so this just do the inversion of the analog input value
-
-
-
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
     PIE_clearInt(myPie, PIE_GroupNumber_10);
@@ -102,7 +96,6 @@ void main(void)
     CLK_setOscSrc(myClk, CLK_OscSrc_Internal);
     PLL_setup(myPll, PLL_Multiplier_10, PLL_DivideSelect_ClkIn_by_2);
 
-
     enable();
     ADC_INIT_Fn();
     ADC_SETUP_Fn();
@@ -113,15 +106,11 @@ void main(void)
       CLK_disableTbClockSync(myClk);
       pwm_Init_();
 
-
       CLK_enableTbClockSync(myClk);
     while(1)
     {
      ADC_forceConversion(myAdc, ADC_SocNumber_0);// Wait for ADC interrupt
-
-
     }
-
 }
 void disable()
 {
@@ -138,11 +127,11 @@ void enable()
   CPU_enableGlobalInts(myCpu);
   CPU_enableDebugInt(myCpu);
 
-      PIE_enableInt(myPie, PIE_GroupNumber_3, PIE_InterruptSource_XINT_1);
+  PIE_enableInt(myPie, PIE_GroupNumber_3, PIE_InterruptSource_XINT_1);
   CPU_enableInt(myCpu, CPU_IntNumber_1);
-     GPIO_setExtInt(myGpio, GPIO_Number_12, CPU_ExtIntNumber_1);
-     PIE_setExtIntPolarity(myPie, CPU_ExtIntNumber_1, PIE_ExtIntPolarity_RisingEdge);
-     PIE_enableExtInt(myPie, CPU_ExtIntNumber_1);
+  GPIO_setExtInt(myGpio, GPIO_Number_12, CPU_ExtIntNumber_1);
+  PIE_setExtIntPolarity(myPie, CPU_ExtIntNumber_1, PIE_ExtIntPolarity_RisingEdge);
+  PIE_enableExtInt(myPie, CPU_ExtIntNumber_1);
 }
 
 void ADC_INIT_Fn()
