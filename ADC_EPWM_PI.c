@@ -1,8 +1,30 @@
-#include "DSP28x_Project.h"     // Device Headerfile and Examples Include File
-#include "f2802x_common/include/adc.h"
-#include "f2802x_common/include/clk.h"
-#include "f2802x_common/include/flash.h"
-#include "f2802x_common/include/gpio.h"
+//----------------------------------------------------------------------------------
+//  FILE:           ADC_EPWM_PI.c
+//
+//  Description:    PI regulation configuration function for flyback stage
+//
+//  Target:         TMS320F2802x,
+//
+// The main script is called:
+//
+//       ADC_EPWM_PI.c
+//
+// Functionality and usability:
+//-------------------------------
+//
+//  The negative feedback is on the ADCINA0 (j15)
+//  The PWM out is locaed on GPIO6
+//
+//  The PI control algorithm is implemented as a discrete PI with the formula
+//  u(k)=(kp*(error(k)-error(k-1))+ki*Ts*error(k))+u(k-1);
+//
+//--------------------------------------------------------------------------------
+
+#include "DSP28x_Project.h"               // Device Headerfile and Examples Include File
+#include "f2802x_common/include/adc.h"    // Analog to digital converter
+#include "f2802x_common/include/clk.h"    // clk
+#include "f2802x_common/include/flash.h"  // flash
+#include "f2802x_common/include/gpio.h"   // GPIO pins (used for GPIO6)
 #include "f2802x_common/include/pie.h"
 #include "f2802x_common/include/pll.h"
 #include "f2802x_common/include/timer.h"
@@ -12,9 +34,10 @@
 
 void pwm_Init_();
 
-unsigned int TBPRD = 330;
+unsigned int TBPRD = 330; // TBPRD register - the speed of the system - here 150 kHz
 unsigned int CMPA  = 0;
 
+// setup all the handles
 ADC_Handle   myAdc;
 CLK_Handle   myClk;
 FLASH_Handle myFlash;
@@ -42,7 +65,7 @@ int Ref_v     = 165;
 double kp   = 1.1;
 double ki   = 1000; // ki=kp/ti
 
-int out_max = 330; // 150 kHz
+int out_max = 330; // 150 kHz - calculated by the TBPRD
 int out_min = 0;
 
 double error       = 0;
@@ -55,7 +78,7 @@ interrupt void adc_isr(void)
 {
     Digital_Result = ADC_readResult(myAdc, ADC_ResultNumber_0);
 
-    adcresult = Digital_Result/12.40909091;
+    adcresult = Digital_Result/12.40909091; // ADC 4095 mapped to TBPRD 330
 
     // PI control algo begin
     error     = Ref_v-adcresult;
@@ -73,11 +96,10 @@ interrupt void adc_isr(void)
     prev_out   = PI_output;
     prev_error = error;
 
-    // set PWM to the PI regulated value
-    set_duty(PI_output); // TBPRD is 12 bit, so this just do the inversion of the analog input value
+    set_duty(PI_output);     // set PWM to the PI regulated value
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
-    PIE_clearInt(myPie, PIE_GroupNumber_10);
+    PIE_clearInt(myPie, PIE_GroupNumber_10);    // Acknowledge interrupt
     return;
 }
 
@@ -114,6 +136,7 @@ void main(void)
       pwm_Init_();
 
       CLK_enableTbClockSync(myClk);
+
     while(1)
     {
      ADC_forceConversion(myAdc, ADC_SocNumber_0);// Wait for ADC interrupt
@@ -121,6 +144,7 @@ void main(void)
 }
 void disable()
 {
+  // Disable function
   PIE_disable(myPie);
   PIE_disableAllInts(myPie);
   CPU_disableGlobalInts(myCpu);
@@ -129,6 +153,7 @@ void disable()
 
 void enable()
 {
+   // Enable function
   PIE_enable(myPie);
   CPU_enableInt(myCpu, CPU_IntNumber_10);
   CPU_enableGlobalInts(myCpu);
@@ -169,8 +194,8 @@ void pwm_Init_()
     CLK_enablePwmClock(myClk, PWM_Number_4);
     // Setup TBCLK
     PWM_setPeriod(myPwm4, TBPRD);   // Set timer period
-    PWM_setPhase(myPwm4, 0x0000);
-    PWM_setCount(myPwm4, 0x0000);
+    PWM_setPhase(myPwm4, 0x0000);   // set the phase
+    PWM_setCount(myPwm4, 0x0000);   // set the count
 
     // Setup counter mode
     PWM_setCounterMode(myPwm4, PWM_CounterMode_UpDown);
@@ -192,6 +217,5 @@ void set_duty( int a)
  PWM_setCmpA(myPwm4, CMPA);
  PWM_setCmpB(myPwm4, CMPA);// Set compare A value
 }
-
 //===========================================================================
 // No more. stop pls
