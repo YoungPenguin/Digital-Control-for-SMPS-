@@ -12,8 +12,8 @@
 // Functionality and usability:
 //-------------------------------
 //
-//  The negative feedback is on the ADCINA0 AA0 (j3-26)
-//  The PWM out is locaed on GPIO6 P6 (j2-13)
+//  The negative feedback is on the ADCINA0 (j15)
+//  The PWM out is locaed on GPIO6
 //
 //  The PI control algorithm is implemented as a discrete PI with the formula
 //  u(k)=(kp*(error(k)-error(k-1))+ki*Ts*error(k))+u(k-1);
@@ -72,13 +72,12 @@ double error       = 0;
 double PI_output   = 0;
 double Ts          = 0.00000666666; // 1/150000  - 150 kHz
 double prev_out    = 0;
-double  prev_error = 0;
+double prev_error  = 0;
 
-interrupt void adc_isr(void)
-{
+interrupt void adc_isr(void) {
     Digital_Result = ADC_readResult(myAdc, ADC_ResultNumber_0);
 
-    adcresult = Digital_Result/12.40909091; // ADC 4095 mapped to TBPRD 330
+    adcresult = (Digital_Result/12.40909091)-2; // ADC 4095 mapped to TBPRD 330 / -2 cos of calib
 
     // PI control algo begin
     error     = Ref_v-adcresult;
@@ -104,8 +103,7 @@ interrupt void adc_isr(void)
 }
 
 
-void main(void)
-{
+void main(void) {
    myAdc   = ADC_init((void *)ADC_BASE_ADDR, sizeof(ADC_Obj));
    myClk   = CLK_init((void *)CLK_BASE_ADDR, sizeof(CLK_Obj));
    myCpu   = CPU_init((void *)NULL, sizeof(CPU_Obj));
@@ -137,13 +135,11 @@ void main(void)
 
       CLK_enableTbClockSync(myClk);
 
-    while(1)
-    {
+    while(1) {
      ADC_forceConversion(myAdc, ADC_SocNumber_0);// Wait for ADC interrupt
     }
 }
-void disable()
-{
+void disable() {
   // Disable function
   PIE_disable(myPie);
   PIE_disableAllInts(myPie);
@@ -151,8 +147,7 @@ void disable()
   CPU_clearIntFlags(myCpu);
 }
 
-void enable()
-{
+void enable() {
    // Enable function
   PIE_enable(myPie);
   CPU_enableInt(myCpu, CPU_IntNumber_10);
@@ -166,8 +161,7 @@ void enable()
   PIE_enableExtInt(myPie, CPU_ExtIntNumber_1);
 }
 
-void ADC_INIT_Fn()
-{
+void ADC_INIT_Fn() {
   ADC_enableBandGap(myAdc);
   ADC_enableRefBuffers(myAdc);
   ADC_powerUp(myAdc);
@@ -175,9 +169,8 @@ void ADC_INIT_Fn()
   ADC_setVoltRefSrc(myAdc, ADC_VoltageRefSrc_Int);
 }
 
-void ADC_SETUP_Fn()
-{
- PIE_registerPieIntHandler(myPie, PIE_GroupNumber_10, PIE_SubGroupNumber_1, (intVec_t)&adc_isr);
+void ADC_SETUP_Fn() {
+  PIE_registerPieIntHandler(myPie, PIE_GroupNumber_10, PIE_SubGroupNumber_1, (intVec_t)&adc_isr);
   PIE_enableAdcInt(myPie, ADC_IntNumber_1);  // Enable ADCINT1 in PIE
 
   ADC_setIntPulseGenMode(myAdc, ADC_IntPulseGenMode_Prior);
@@ -189,8 +182,7 @@ void ADC_SETUP_Fn()
   ADC_setSocSampleWindow(myAdc, ADC_SocNumber_0, ADC_SocSampleWindow_7_cycles);
 }
 
-void pwm_Init_()
-{
+void pwm_Init_() {
     CLK_enablePwmClock(myClk, PWM_Number_4);
     // Setup TBCLK
     PWM_setPeriod(myPwm4, TBPRD);   // Set timer period
@@ -211,8 +203,7 @@ void pwm_Init_()
     PWM_setActionQual_CntDown_CmpA_PwmA(myPwm4, PWM_ActionQual_Set);  // Clear PWM1A on event A, down count
 
 }
-void set_duty( int a)
-{
+void set_duty( int a) {
  CMPA = a;
  PWM_setCmpA(myPwm4, CMPA);
  PWM_setCmpB(myPwm4, CMPA);// Set compare A value
