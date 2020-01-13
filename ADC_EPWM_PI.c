@@ -12,8 +12,8 @@
 // Functionality and usability:
 //-------------------------------
 //
-//  The negative feedback is on the ADCINA0 (j15)
-//  The PWM out is locaed on GPIO6
+//  The negative feedback is on the ADCINA0 AA0 (j3-26)
+//  The PWM out is locaed on GPIO6 P6 (j2-13)
 //
 //  The PI control algorithm is implemented as a discrete PI with the formula
 //  u(k)=(kp*(error(k)-error(k-1))+ki*Ts*error(k))+u(k-1);
