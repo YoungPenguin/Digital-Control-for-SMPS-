@@ -12,8 +12,8 @@
 
 void pwm_Init_();
 
-unsigned int TBPRD = 4096;// step-size of the PWM (PWM resolution)
-unsigned int CMPA=0;
+unsigned int TBPRD = 330;
+unsigned int CMPA  = 0;
 
 ADC_Handle   myAdc;
 CLK_Handle   myClk;
@@ -27,7 +27,7 @@ WDOG_Handle  myWDog;
 PWM_Handle   myPwm4;
 PWR_Handle   myPwr;
 
-uint16_t Digital_Result =2000;
+uint16_t Digital_Result = 0;
 
 void disable();
 void enable();
@@ -35,38 +35,45 @@ void ADC_INIT_Fn();
 void ADC_SETUP_Fn();
 void set_duty(int a);
 
-int adcresult=2048;
-int Ref_v = 2048;
+int adcresult = 0;
+int Ref_v     = 165;
 
 // control parameters
-double kp = 0.5;
-double ki = 5;
-int out_max = 4096;
+double kp   = 1.1;
+double ki   = 1000; // ki=kp/ti
+
+int out_max = 330; // 150 kHz
 int out_min = 0;
 
-double error;
-double PI_output;
-double Ts = 0.001666666666; // 1/600  - 600Hz
-double prev_out;
-double  prev_error;
+double error       = 0;
+double PI_output   = 0;
+double Ts          = 0.00000666666; // 1/150000  - 150 kHz
+double prev_out    = 0;
+double  prev_error = 0;
 
 interrupt void adc_isr(void)
 {
     Digital_Result = ADC_readResult(myAdc, ADC_ResultNumber_0);
 
-    adcresult = Digital_Result;
+    adcresult = Digital_Result/12.40909091;
 
-    error = Ref_v-adcresult;
+    // PI control algo begin
+    error     = Ref_v-adcresult;
     PI_output = (kp*(error-prev_error)+ki*Ts*error)+prev_out;
 
+    // anti-windup
     if(PI_output > out_max){
-        PI_output = out_max;}
+        PI_output = out_max;
+    }
     else if (PI_output < out_min) {
         PI_output = out_min;
     }
-    prev_out = PI_output;
+
+    // defining the u(k-1) and e(k-1)
+    prev_out   = PI_output;
     prev_error = error;
 
+    // set PWM to the PI regulated value
     set_duty(PI_output); // TBPRD is 12 bit, so this just do the inversion of the analog input value
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
@@ -77,24 +84,24 @@ interrupt void adc_isr(void)
 
 void main(void)
 {
-   myAdc = ADC_init((void *)ADC_BASE_ADDR, sizeof(ADC_Obj));
-   myClk = CLK_init((void *)CLK_BASE_ADDR, sizeof(CLK_Obj));
-   myCpu = CPU_init((void *)NULL, sizeof(CPU_Obj));
+   myAdc   = ADC_init((void *)ADC_BASE_ADDR, sizeof(ADC_Obj));
+   myClk   = CLK_init((void *)CLK_BASE_ADDR, sizeof(CLK_Obj));
+   myCpu   = CPU_init((void *)NULL, sizeof(CPU_Obj));
    myFlash = FLASH_init((void *)FLASH_BASE_ADDR, sizeof(FLASH_Obj));
-   myGpio = GPIO_init((void *)GPIO_BASE_ADDR, sizeof(GPIO_Obj));
-   myPie = PIE_init((void *)PIE_BASE_ADDR, sizeof(PIE_Obj));
-   myPll = PLL_init((void *)PLL_BASE_ADDR, sizeof(PLL_Obj));
+   myGpio  = GPIO_init((void *)GPIO_BASE_ADDR, sizeof(GPIO_Obj));
+   myPie   = PIE_init((void *)PIE_BASE_ADDR, sizeof(PIE_Obj));
+   myPll   = PLL_init((void *)PLL_BASE_ADDR, sizeof(PLL_Obj));
    myTimer = TIMER_init((void *)TIMER0_BASE_ADDR, sizeof(TIMER_Obj));
-   myWDog = WDOG_init((void *)WDOG_BASE_ADDR, sizeof(WDOG_Obj));
-   myPwm4 = PWM_init((void *)PWM_ePWM4_BASE_ADDR, sizeof(PWM_Obj));
-   myPwr = PWR_init((void *)PWR_BASE_ADDR, sizeof(PWR_Obj));
+   myWDog  = WDOG_init((void *)WDOG_BASE_ADDR, sizeof(WDOG_Obj));
+   myPwm4  = PWM_init((void *)PWM_ePWM4_BASE_ADDR, sizeof(PWM_Obj));
+   myPwr   = PWR_init((void *)PWR_BASE_ADDR, sizeof(PWR_Obj));
 
    disable();
     // basic initialization
     WDOG_disable(myWDog);
     CLK_enableAdcClock(myClk);
     CLK_setOscSrc(myClk, CLK_OscSrc_Internal);
-    PLL_setup(myPll, PLL_Multiplier_10, PLL_DivideSelect_ClkIn_by_2);
+    PLL_setup(myPll, PLL_Multiplier_10, PLL_DivideSelect_ClkIn_by_1);
 
     enable();
     ADC_INIT_Fn();
@@ -161,14 +168,16 @@ void pwm_Init_()
 {
     CLK_enablePwmClock(myClk, PWM_Number_4);
     // Setup TBCLK
-    PWM_setPeriod(myPwm4, TBPRD);   // Set timer period 801 TBCLKs
+    PWM_setPeriod(myPwm4, TBPRD);   // Set timer period
     PWM_setPhase(myPwm4, 0x0000);
     PWM_setCount(myPwm4, 0x0000);
 
     // Setup counter mode
     PWM_setCounterMode(myPwm4, PWM_CounterMode_UpDown);
     PWM_disableCounterLoad(myPwm4);
-    PWM_setHighSpeedClkDiv(myPwm4, PWM_HspClkDiv_by_10);
+
+    // clk division
+    PWM_setHighSpeedClkDiv(myPwm4, PWM_HspClkDiv_by_1);
     PWM_setClkDiv(myPwm4, PWM_ClkDiv_by_1);
 
     PWM_setShadowMode_CmpA(myPwm4, PWM_ShadowMode_Shadow);
