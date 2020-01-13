@@ -5,7 +5,7 @@
 //
 //  Target:         TMS320F2802x,
 //
-// The main script is called:
+// The main program file is called:
 //
 //       ADC_EPWM_PI.c
 //
