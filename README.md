@@ -4,6 +4,8 @@ Done with embedded C on a C2000 F28027F platform.
 
 Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz
 
+ADCINA0 AA0 (j3-26) -
+GPIO6 P6 (j2-13)
 
 The implementation of the PI algorithm is done in discrete time as follows: 
 
