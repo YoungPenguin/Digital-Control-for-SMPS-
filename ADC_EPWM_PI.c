@@ -61,9 +61,9 @@ void set_duty(int a);
 int adcresult = 0;
 int Ref_v     = 165;
 
-// control parameters
-double kp   = 1.1;
-double ki   = 1000; // ki=kp/ti
+// control parameters  
+double kp   = -0.6865;
+double ki   = 0.00000104; // ki=kp/ti 
 
 int out_max = 330; // 150 kHz - calculated by the TBPRD
 int out_min = 0;
