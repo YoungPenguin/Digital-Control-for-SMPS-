@@ -12,13 +12,24 @@
 // Functionality and usability:
 //-------------------------------
 //
-//  The negative feedback is on the ADCINA0 (j15)
-//  The PWM out is locaed on GPIO6
+//  The negative feedback is on the ADCINA0 AA0 (j3-26
+//  The PWM out is located on GPIO6 P6 (j2-13)
 //
 //  The PI control algorithm is implemented as a discrete PI with the formula
 //  u(k)=(kp*(error(k)-error(k-1))+ki*Ts*error(k))+u(k-1);
 //
-//--------------------------------------------------------------------------------
+ /*------------------------------------------------------------------------------
+ * Last modification:
+ *------------------------------------------------------------------------------
+ *  on $ 14.Jan.2020
+ *------------------------------------------------------------------------------*/
+ /*------------------------------------------------------------------------------
+ * Copyright (c) 2020 Denmark DTU.
+ * All rights reserved.
+ *******************************************************************************/
+/********************************************************************************
+ * Included header
+ *******************************************************************************/
 
 #include "DSP28x_Project.h"               // Device Headerfile and Examples Include File
 #include "f2802x_common/include/adc.h"    // Analog to digital converter
@@ -59,11 +70,11 @@ void ADC_SETUP_Fn();
 void set_duty(int a);
 
 int adcresult = 0;
-int Ref_v     = 165;
+int Ref_v     = 220;
 
-// control parameters  
+// control parameters
 double kp   = 0.00007829;
-double ki   = 1.7131; // ki=kp/ti 
+double ki   = 1.7131; // ki=kp/ti
 
 int out_max = 330; // 150 kHz - calculated by the TBPRD
 int out_min = 0;
@@ -77,7 +88,7 @@ double prev_error  = 0;
 interrupt void adc_isr(void) {
     Digital_Result = ADC_readResult(myAdc, ADC_ResultNumber_0);
 
-    adcresult = (Digital_Result/12.40909091)-2; // ADC 4095 mapped to TBPRD 330 / -2 cos of calib
+    adcresult = (Digital_Result/12.40909091); // ADC 4095 mapped to TBPRD 330
 
     // PI control algo begin
     error     = Ref_v-adcresult;
@@ -201,12 +212,12 @@ void pwm_Init_() {
     PWM_setLoadMode_CmpA(myPwm4, PWM_LoadMode_Zero);
     PWM_setActionQual_CntUp_CmpA_PwmA(myPwm4, PWM_ActionQual_Clear);
     PWM_setActionQual_CntDown_CmpA_PwmA(myPwm4, PWM_ActionQual_Set);  // Clear PWM1A on event A, down count
-
 }
 void set_duty( int a) {
  CMPA = a;
  PWM_setCmpA(myPwm4, CMPA);
  PWM_setCmpB(myPwm4, CMPA);// Set compare A value
 }
+
 //===========================================================================
 // No more. stop pls
