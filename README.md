@@ -2,7 +2,7 @@
 Digital Control for SMPS in CPT Charging System
 Done with embedded C on a C2000 TMS320F28027F DSP MCU.
 
-Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz
+Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz - TBPRD 330
 
 ADCINA0 AA0 (j3-26) -
 GPIO6 P6 (j2-13)
