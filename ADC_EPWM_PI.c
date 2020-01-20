@@ -12,7 +12,7 @@
 // Functionality and usability:
 //-------------------------------
 //
-//  The negative feedback is on the ADCINA0 AA0 (j3-26
+//  The feedback is on the ADCINA0 AA0 (j3-26
 //  The PWM out is located on GPIO6 P6 (j2-13)
 //
 //  The PI control algorithm is implemented as a discrete PI with the formula
@@ -21,12 +21,13 @@
  /*------------------------------------------------------------------------------
  * Last modification:
  *------------------------------------------------------------------------------
- *  on $ 14.Jan.2020
- *------------------------------------------------------------------------------*/
+ *  on $ 24.Jan.2020
  /*------------------------------------------------------------------------------
  * Copyright (c) 2020 Denmark DTU.
  * All rights reserved.
  *******************************************************************************/
+
+
 /********************************************************************************
  * Included header
  *******************************************************************************/
@@ -70,7 +71,7 @@ void ADC_SETUP_Fn();
 void set_duty(int a);
 
 int adcresult = 0;
-int Ref_v     = 220;
+int Ref_v     = 110;
 
 // control parameters
 double kp   = 0.00007829;
@@ -105,7 +106,6 @@ interrupt void adc_isr(void) {
     // defining the u(k-1) and e(k-1)
     prev_out   = PI_output;
     prev_error = error;
-
     set_duty(PI_output);     // set PWM to the PI regulated value
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
@@ -115,6 +115,7 @@ interrupt void adc_isr(void) {
 
 
 void main(void) {
+
    myAdc   = ADC_init((void *)ADC_BASE_ADDR, sizeof(ADC_Obj));
    myClk   = CLK_init((void *)CLK_BASE_ADDR, sizeof(CLK_Obj));
    myCpu   = CPU_init((void *)NULL, sizeof(CPU_Obj));
