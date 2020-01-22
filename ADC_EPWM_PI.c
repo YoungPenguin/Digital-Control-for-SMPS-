@@ -10,7 +10,7 @@
 //       ADC_EPWM_PI.c
 //
 // Functionality and usability:
-//-------------------------------
+//------------------------------------------------------------------------------
 //
 //  The feedback is on the ADCINA0 AA0 (j3-26
 //  The PWM out is located on GPIO6 P6 (j2-13)
@@ -22,7 +22,7 @@
  * Last modification:
  *------------------------------------------------------------------------------
  *  on $ 24.Jan.2020
- /*------------------------------------------------------------------------------
+ *------------------------------------------------------------------------------
  * Copyright (c) 2020 Denmark DTU.
  * All rights reserved.
  *******************************************************************************/
@@ -106,7 +106,8 @@ interrupt void adc_isr(void) {
     // defining the u(k-1) and e(k-1)
     prev_out   = PI_output;
     prev_error = error;
-    set_duty(PI_output);     // set PWM to the PI regulated value
+    set_duty(out_max-PI_output); //
+  //  set_duty(PI_output);     // set PWM to the PI regulated value
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
     PIE_clearInt(myPie, PIE_GroupNumber_10);    // Acknowledge interrupt
