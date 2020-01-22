@@ -77,8 +77,8 @@ int Ref_v     = 110;
 double kp   = 0.00007829;
 double ki   = 1.7131; // ki=kp/ti
 
-int out_max = 330; // 150 kHz - calculated by the TBPRD
-int out_min = 0;
+int out_max = 297; // 150 kHz - calculated by the TBPRD
+int out_min = 33;
 
 double error       = 0;
 double PI_output   = 0;
@@ -94,7 +94,7 @@ interrupt void adc_isr(void) {
     // PI control algo begin
     error     = Ref_v-adcresult;
     PI_output = (kp*(error-prev_error)+ki*Ts*error)+prev_out;
-
+    PI_output = TBPRD-PI_output;
     // anti-windup
     if(PI_output > out_max){
         PI_output = out_max;
@@ -106,7 +106,7 @@ interrupt void adc_isr(void) {
     // defining the u(k-1) and e(k-1)
     prev_out   = PI_output;
     prev_error = error;
-    set_duty(out_max-PI_output); //
+    set_duty(PI_output); //
   //  set_duty(PI_output);     // set PWM to the PI regulated value
 
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);   // Clear ADCINT1 flag
