@@ -4,7 +4,7 @@ Done with embedded C on a C2000 TMS320F28027F DSP MCU.
 
 Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz - TBPRD 330
 
-ADCINA0 AA0 (j3-26) -
+ADCINA4 AA4 (j1-6) -
 GPIO6 P6 (j2-13)
 
 The implementation of the PI algorithm is done in discrete time as follows: 
