@@ -1,4 +1,4 @@
-# Digital-Control-for-SMPS-
+# Digital Control for SMPS in CPT Charging System
 Digital Control for SMPS in CPT Charging System
 Done with embedded C on a C2000 TMS320F28027F DSP MCU.
 
