@@ -5,7 +5,7 @@ Done with embedded C on a C2000 TMS320F28027F DSP MCU.
 Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz - TBPRD 330
 
 ADCINA4 AA4 (j1-6) -
-GPIO6 P6 (j2-13)
+GPIO6 P6 (j2-13)-
 
 The implementation of the PI algorithm is done in discrete time as follows: 
 
@@ -22,4 +22,6 @@ The implementation of the PI algorithm is done in discrete time as follows:
 ![](http://latex.codecogs.com/gif.latex?u%28k%29%3Du%28k-1%29&plus;%5CDelta%20u%28k%29)
 
 ![](http://latex.codecogs.com/gif.latex?%3Du%28k-1%29&plus;K_%7Bp%7D%281&plus;%5Cfrac%7BT_%7Bs%7D%7D%7BT_%7Bi%7D%7D%29e%28k%29&plus;K_%7Bp%7De%28k-1%29)
+
+The transfer function is found by modeling and regulation is done with matlab and simulink
 
