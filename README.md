@@ -1,7 +1,16 @@
 # Digital Control for SMPS in CPT Charging System
+
+
 Digital Control for SMPS in CPT Charging System
 Done with embedded C on a C2000 TMS320F28027F DSP MCU.
 
+# Transfer function
+The Control-to-Output transfer function is found by modeling:
+
+![first equation](https://latex.codecogs.com/gif.latex?G_%7Bvd%7D%3D%5Cfrac%7BV%20%5Cleft%28R-%5Cfrac%7BDL%7D%7BD%27%5E2%7Ds%20%5Cright%29%7D%7BLRCs%5E2&plus;Ls&plus;RD%27%5E2%7D)
+This is as expected the same as a buck-boost as the flyback is just an isolated version of this.
+
+# Implementation 
 Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz - TBPRD 330
 
 ADCINA4 AA4 (j1-6) -
