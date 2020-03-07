@@ -8,7 +8,10 @@ Done with embedded C on a C2000 TMS320F28027F DSP MCU.
 The Control-to-Output transfer function is found by modeling:
 
 ![first equation](https://latex.codecogs.com/gif.latex?G_%7Bvd%7D%3D%5Cfrac%7BV%20%5Cleft%28R-%5Cfrac%7BDL%7D%7BD%27%5E2%7Ds%20%5Cright%29%7D%7BLRCs%5E2&plus;Ls&plus;RD%27%5E2%7D)
-This is as expected the same as a buck-boost as the flyback is just an isolated version of this.
+
+This is as expected the same as a buck-boost as the flyback is just an isolated version of this. With paracitic parameters the transfer function becomes:
+
+![first equation](https://latex.codecogs.com/gif.latex?G_%7Bvd%7D%3D%5Cfrac%7BV_%7Bg%7D&plus;V-%5Cfrac%7BR_L&plus;Ls%7D%7BD%27%7DI_L%7D%7BD%27%20%5Cleft%28%5Cleft%28%5Cfrac%7BLC%7D%7BD%27%5E2%7D%20%5Cright%29s%5E2&plus;%20%5Cleft%28%5Cfrac%7BR_LC&plus;L/R%7D%7BD%27%5E2%7D%20%5Cright%29s&plus;%20%5Cleft%281&plus;%5Cfrac%7BR_L/R%7D%7BD%27%5E2%7D%20%5Cright%29%20%5Cright%29%7D)
 
 # Implementation 
 Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz - TBPRD 330
