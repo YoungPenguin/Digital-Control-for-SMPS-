@@ -13,6 +13,9 @@ This is as expected the same as a buck-boost as the flyback is just an isolated 
 
 ![first equation](https://latex.codecogs.com/gif.latex?G_%7Bvd%7D%3D%5Cfrac%7BV_%7Bg%7D&plus;V-%5Cfrac%7BR_L&plus;Ls%7D%7BD%27%7DI_L%7D%7BD%27%20%5Cleft%28%5Cleft%28%5Cfrac%7BLC%7D%7BD%27%5E2%7D%20%5Cright%29s%5E2&plus;%20%5Cleft%28%5Cfrac%7BR_LC&plus;L/R%7D%7BD%27%5E2%7D%20%5Cright%29s&plus;%20%5Cleft%281&plus;%5Cfrac%7BR_L/R%7D%7BD%27%5E2%7D%20%5Cright%29%20%5Cright%29%7D)
 
+# Update
+This will be converted to a tustin implementation
+
 # Implementation 
 Implementet PI controller with ADC at ADCINA0 and out at PWM4A (GPIO6) @ 150 kHz - TBPRD 330
 
