@@ -1,32 +1,3 @@
-//----------------------------------------------------------------------------------
-//  FILE:           ADC_EPWM_PI.c
-//
-//  Description:    PI regulation configuration function for flyback stage
-//
-//  Target:         TMS320F2802x,
-//
-// The main program file is called:
-//
-//       ADC_EPWM_PI.c
-//
-// Functionality and usability:
-//------------------------------------------------------------------------------
-//
-//  The feedback is on the ADCINA4 AA4 (j1-6)
-//  The PWM out is located on GPIO6 P6 (j2-13)
-//
-//  The PI control algorithm is implemented as a discrete PI with the formula
-//  u(k)=(kp*(error(k)-error(k-1))+ki*Ts*error(k))+u(k-1);
-//
- /*------------------------------------------------------------------------------
- * Last modification:
- *------------------------------------------------------------------------------
- *  on $ 24.Jan.2020
- *------------------------------------------------------------------------------
-
-/********************************************************************************
- * Included header
- *******************************************************************************/
 
 // Code for H bridge buck boost converter PWM
 
@@ -58,9 +29,9 @@ float V_duty;
 float comp_value, Duty;
 /*** PI controller **/
 
-
-    float Kp = 0.1;     // [0] proportional gain
-    float Ki = 0.05;        // [2] integral gain
+float placeholder = 0.0;
+    float Kp = 0.6;     // [0] proportional gain
+    float Ki = 20;        // [2] integral gain
     float i10;              // [4] I storage
     float Umax = 0.99;      // [6] upper saturation limit
     float Umin = -0.99;     // [8] lower saturation limit
@@ -165,7 +136,7 @@ void main(void)
     PWM_setSocAPulseSrc(myPwm2, PWM_SocPulseSrc_CounterEqualCmpAIncr);   // Select SOC from from CPMA on upcount
     PWM_setSocAPeriod(myPwm2, PWM_SocPeriod_FirstEvent);                 // Generate pulse on 1st event
     PWM_setCmpA(myPwm2, 0x0000);                                         // Set compare A value
-    PWM_setPeriod(myPwm2, 0x05DC);                                       // Period = 1388 for 5Khz Sampling Frequency
+    PWM_setPeriod(myPwm2, 0x3638);                                       // Period = 13880 for 50Khz Sampling Frequency
     PWM_setCounterMode(myPwm2, PWM_CounterMode_Up);                      // count up and start
     CLK_enableTbClockSync(myClk);
 
@@ -214,8 +185,8 @@ __interrupt void adc_isr(void)
       if(ConversionCount == 19)
       {
         Vout_count = sum/ConversionCount;  // average count
-        Va = (Vout_count * 3.3)/(4096) ;  // sensed voltage in 3.3V format
-        err_5 = 0.7 - Va;
+        Va = (Vout_count * 3.3)/(4096) ;  // sensed voltage in 3.3V
+        err_5 = 1.0 - Va;
 
         A_5 = (err_5 * Kp); // kp multiplication
         B_5 = (err_5 * Ki); // Ki multiplication
@@ -237,5 +208,7 @@ __interrupt void adc_isr(void)
     ADC_clearIntFlag(myAdc, ADC_IntNumber_1);
     // Acknowledge interrupt to PIE
     PIE_clearInt(myPie, PIE_GroupNumber_10);
+
   //  return;
 }
+
